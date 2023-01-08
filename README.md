@@ -1,2 +1,2 @@
 # tictactoe-AI-with-Monte-
-Monte Carlo algorithm
+using primitive Monte Carlo algorithm
