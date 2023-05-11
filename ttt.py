@@ -12,6 +12,7 @@ import math
 import copy
 from numpy import log as ln
 import time
+import pickle
 #--------------------------------------------------------------------------
 pygame.init()
 screenWidth=640
@@ -43,25 +44,45 @@ end_signal=False
 stick1s=[]
 stick1_w=10
 stick1_h=640
-for i in range(0,4):
+for i in range(1,3):
   stick1=pygame.Rect((stick1_w+(screenWidth-stick1_w*4)/3)*i,0,stick1_w,stick1_h)
   stick1s.append(stick1)
 #--------------------------------------------------------------------------
 stick2s=[]
 stick2_w=640
 stick2_h=10
-for i in range(0,4):
+for i in range(1,3):
   stick2=pygame.Rect(0,(stick2_h+(screenHeight-stick2_h*4)/3)*i,stick2_w,stick2_h)
   stick2s.append(stick2)
 #--------------------------------------------------------------------------
+stick3s=[]
+stick3_w=30
+stick3_h=640
+stick3=pygame.Rect((stick3_w+(screenWidth-stick3_w*4)/3)*0,0,stick3_w,stick3_h)
+stick3s.append(stick3)
+stick3=pygame.Rect((stick3_w+(screenWidth-stick3_w*4)/3)*3,0,stick3_w,stick3_h)
+stick3s.append(stick3)
+#--------------------------------------------------------------------------
+stick4s=[]
+stick4_h=30
+stick4_w=640
+stick4=pygame.Rect(0,(stick4_h+(screenHeight-stick4_h*4)/3)*0,stick4_w,stick4_h)
+stick4s.append(stick4)
+stick4=pygame.Rect(0,(stick4_h+(screenHeight-stick4_h*4)/3)*3,stick4_w,stick4_h)
+stick4s.append(stick4)
+#--------------------------------------------------------------------------
 def drawstick():
   for stick1 in stick1s:
-    pygame.draw.rect(screen,(0,0,0),stick1)
+    pygame.draw.rect(screen,(255,255,255),stick1)
   for stick2 in stick2s:
-    pygame.draw.rect(screen,(0,0,0),stick2)
-#--------------------------------------------------------------------------
+    pygame.draw.rect(screen,(255,255,255),stick2)
+  for stick3 in stick3s:
+    pygame.draw.rect(screen,(0,150,60),stick3)
+  for stick4 in stick4s:
+    pygame.draw.rect(screen,(0,150,60),stick4)
+#-------------------------------=-------------------------------------------
 def draw():
-  screen.fill(WHITE)
+  screen.fill((0,150,60))
   #drawstick()
 #--------------------------------------------------------------------------
 def drawOX():
@@ -70,10 +91,10 @@ def drawOX():
   for i in range(0,3):
     for k in range(0,3):
       if tictactoe_list[i][k]=="human":
-        text = sysfont.render("O", True,(0,0,0))
+        text = sysfont.render("O", True,(255,255,255))
         screen.blit(text, (((k+1)*90+120*k,(i+1)*90+120*i)))#추후 글자크기까지 고려해서 일반화
       elif tictactoe_list[i][k]=="ai":
-        text = sysfont.render("X", True,(0,0,0))
+        text = sysfont.render("X", True,(255,255,255))
         screen.blit(text, (((k+1)*90+120*k,(i+1)*90+120*i)))
 #--------------------------------------------------------------------------
 #node_list에 현 상황,방문횟수,ucb1값 실시간으로 갱신/몇수 앞까지 내다보는게 좋을까
@@ -216,12 +237,12 @@ def ai_select_location():
       passsing[i]=0
   if sum(passsing)==0:
     tictactoe_list=node_list[1][xj.index(max(xj))]
-    print(ai_win)
-    print(human_win)
-    print(tie)
-    print(xj)
-    print(nj)
-    print(UCB1list)
+    print("ai_win:",ai_win)
+    print("human_win:",human_win)
+    print("tie:",tie)
+    print("win_rate:",xj)
+    print("n:",nj)
+    print("UCB1:",UCB1list)
     #print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
     breaksignal=True
   #각 child 노드에서 선택 횟수가 일정 횟수 초과하였을떄 ai_select_location(), 변수 초기화
@@ -255,67 +276,85 @@ def human_select_location():#다른 위치 선택할떄까지 반복, 마우스�
 #-------------------------------------------------------------------------------------------------------------------------------
 def  who_win():#실제 게임에서
   global tictactoe_list,end_signal
+  global HW,AW,D
   #가로----------------------------------------------------------------------
   if tictactoe_list[0][0]==tictactoe_list[0][1]==tictactoe_list[0][2]:
     if tictactoe_list[0][0]=="human":
       print("human win")
+      HW=HW+1
       end_signal=True
     elif tictactoe_list[0][0]=="ai":
       print("ai win")
+      AW=AW+1
       end_signal = True
   elif tictactoe_list[1][0]==tictactoe_list[1][1]==tictactoe_list[1][2]:
     if tictactoe_list[1][0]=="human":
       print("human win")
+      HW = HW + 1
       end_signal = True
     elif tictactoe_list[1][0]=="ai":
       print("ai win")
+      AW = AW + 1
       end_signal = True
   elif tictactoe_list[2][0]==tictactoe_list[2][1]==tictactoe_list[2][2]:
     if tictactoe_list[2][0]=="human":
       print("human win")
+      HW = HW + 1
       end_signal = True
     elif tictactoe_list[2][0]=="ai":
       print("ai win")
+      AW = AW + 1
       end_signal = True
 #세로---------------------------
   elif tictactoe_list[0][0]==tictactoe_list[1][0]==tictactoe_list[2][0]:
     if tictactoe_list[0][0]=="human":
       print("human win")
+      HW = HW + 1
       end_signal = True
     elif tictactoe_list[0][0]=="ai":
       print("ai win")
+      AW = AW + 1
       end_signal = True
   elif tictactoe_list[0][1]==tictactoe_list[1][1]==tictactoe_list[2][1]:
     if tictactoe_list[0][1]=="human":
       print("human win")
+      HW = HW + 1
       end_signal = True
     elif tictactoe_list[0][1]=="ai":
       print("ai win")
+      AW = AW + 1
       end_signal = True
   elif tictactoe_list[0][2]==tictactoe_list[1][2]==tictactoe_list[2][2]:
     if tictactoe_list[0][2]=="human":
       print("human win")
+      HW = HW + 1
       end_signal = True
     elif tictactoe_list[0][2]=="ai":
       print("ai win")
+      AW = AW + 1
       end_signal = True
   #대각선---------------------------
   elif tictactoe_list[0][0]==tictactoe_list[1][1]==tictactoe_list[2][2]:
     if tictactoe_list[0][0]=="human":
       print("human win")
+      HW = HW + 1
       end_signal = True
     elif tictactoe_list[0][0]=="ai":
       print("ai win")
+      AW = AW + 1
       end_signal = True
   elif tictactoe_list[0][2]==tictactoe_list[1][1]==tictactoe_list[2][0]:
     if tictactoe_list[0][2]=="human":
       print("human win")
+      HW = HW + 1
       end_signal = True
     elif tictactoe_list[0][2]=="ai":
       print("ai win")
+      AW = AW + 1
       end_signal = True
   elif tictactoe_list[0][0]!=1 and tictactoe_list[0][1]!=2 and tictactoe_list[0][2]!=3 and tictactoe_list[1][0]!=4 and tictactoe_list[1][1]!=5 and tictactoe_list[1][2]!=6 and tictactoe_list[2][0]!=7 and tictactoe_list[2][1]!=8 and tictactoe_list[2][2]!=9:
     print("draw")
+    D=D+1
     end_signal = True
 #------------------------------------------------------------------------------------------------------------------------------------------------------
 def who_win1():
@@ -448,6 +487,14 @@ drawstick()
 pygame.display.update()
 #--------------------------------------------------------------------------
 #반복
+with open('winrating.pkl', 'rb') as f:
+  HW = pickle.load(f)
+  AW = pickle.load(f)
+  D = pickle.load(f)
+  print("Human win:", HW)
+  print("Ai win:", AW)
+  print("Draw:", D)
+  print("Total:", HW + AW + D)
 while True:
 #--------------------------------------------------------------------------
 #종료
@@ -457,10 +504,16 @@ while True:
           sys.exit()
       elif event.type == pygame.MOUSEBUTTONDOWN:
         print(pygame.mouse.get_pos())
-#--------------------------------------p------------------------------------
+#--------------------------------------------------------------------------
+  if end_signal == True:
+    print(HW,AW,D)
+    with open('winrating.pkl', 'wb') as f:
+      pickle.dump(HW, f)
+      pickle.dump(AW, f)
+      pickle.dump(D, f)
+    time.sleep(10000)
+#--------------------------------------------------------------------------
   if first_or_second=="ai": #이것도 함수로
-    if end_signal==True:
-      time.sleep(10000)
     print("ai turn")
     remain1()
     UCB1list1()
